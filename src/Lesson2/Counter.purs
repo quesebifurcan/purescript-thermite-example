@@ -18,6 +18,9 @@ import Lesson2.Button (ButtonAction(..), ButtonState, button)
 import Control.Monad.Aff (Aff, delay)
 import Control.Monad.Trans.Class (lift)
 import Data.Newtype (wrap)
+import Data.HTTP.Method (Method(..))
+import Network.HTTP.Affjax (affjax, defaultRequest)
+import Control.Applicative
 
 type CounterState =
   { count :: Int
