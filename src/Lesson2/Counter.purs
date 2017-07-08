@@ -6,6 +6,8 @@ module Lesson2.Counter
   ) where
 
 import Prelude
+import Unsafe.Coerce
+import Data.Lens.Internal.Forget
 import React.DOM as RD
 import React.DOM.Props as RP
 import Thermite as T
@@ -13,7 +15,9 @@ import Data.Lens (Prism', prism', Lens, lens, over, view, set, addOver, subOver,
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Lesson2.Button (ButtonAction(..), ButtonState, button)
-import Unsafe.Coerce -- Here is the culprit
+import Control.Monad.Aff (Aff, delay)
+import Control.Monad.Trans.Class (lift)
+import Data.Newtype (wrap)
 
 type CounterState =
   { count :: Int
@@ -72,7 +76,10 @@ render dispatch _ state _ =
 --   CounterState ->
 --   CounterState
 
--- See https://stackoverflow.com/questions/20626963/haskell-lenses-getters-and-setters
+-- See https://stackoverflow.com/questions/20626963/haskell-lenses-getters-and-setters ((t34 -> t33) -> t36 -> t35) ->
+--performIncrementBy :: forall t24 t26 t29 t31 t33 t34 t35 t36. Semiring t33 => (Forget t33 t33 t29 -> Forget t33 t36 t31) -> (Forget t33 t33 t24 -> Forget t33 t36 t26) -> ((t34 -> t33) -> t36 -> t35) -> t36 -> t35
+
+performIncrementBy :: forall b'' t' b' t a u state' s. Semiring a => Lens s t a b' -> Lens s t' a b'' -> ((u -> a) -> s -> state') -> s -> state'
 performIncrementBy countL incrementByL countL' state =
   let incrementBy = view incrementByL state
       count = view countL state
@@ -81,7 +88,9 @@ performIncrementBy countL incrementByL countL' state =
 
 performAction :: T.PerformAction _ CounterState _ CounterAction
 -- performAction Increment _ _ = void $ T.modifyState $ (over count id)
-performAction Increment _ _ = void $ T.modifyState $ performIncrementBy count incrementBy count
+performAction Increment _ _ = do
+  lift (delay (wrap 500.0))
+  void $ T.modifyState $ performIncrementBy count incrementBy count
 performAction Decrement _ _ = void $ T.modifyState $ subOver count 1
 performAction (SetIncrementBy x) _ _ = void $ T.modifyState $ (over incrementBy (\_ -> x))
 
