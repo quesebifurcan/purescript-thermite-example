@@ -12,6 +12,7 @@ import React.DOM as RD
 import React.DOM.Props as RP
 import Thermite as T
 import Data.Lens (Prism', prism', Lens, lens, over, view, set, addOver, subOver, _1, _2)
+import Data.Lens.Index
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Lesson2.Button (ButtonAction(..), ButtonState, button)
@@ -25,6 +26,7 @@ import Control.Applicative
 type CounterState =
   { count :: Int
   , buttonState :: Tuple ButtonState ButtonState
+  , buttonState2 :: Array ButtonState
   , incrementBy :: Int
   }
 
@@ -38,6 +40,9 @@ incrementBy = lens _.incrementBy (_ { incrementBy = _ })
 buttonState :: forall a b r. Lens { buttonState :: a | r } { buttonState :: b | r } a b
 buttonState = lens _.buttonState (_ { buttonState = _ })
 
+buttonState2 :: forall a b r. Lens { buttonState2 :: a | r } { buttonState2 :: b | r } a b
+buttonState2 = lens _.buttonState2 (_ { buttonState2 = _ })
+
 initialState :: CounterState
 initialState =
   { count : 0
@@ -48,6 +53,7 @@ initialState =
     { text: "Decrement"
     , className: "btn btn-danger"
     }
+  , buttonState2 : []
   , incrementBy: 2
   }
 
@@ -107,8 +113,11 @@ _Increment = prism' (const Increment) $
     Increment -> Just Clicked
     _         -> Nothing
 
+test = (buttonState2 <<< ix 1)
+
 incrementButton :: T.Spec _ CounterState _ CounterAction
 incrementButton = T.focus (buttonState <<< _1) _Increment button
+-- why does this not compile with (buttonState2 <<< ix 0)
 
 -- map a Clicked to an Decrement
 _Decrement :: Prism' CounterAction ButtonAction
