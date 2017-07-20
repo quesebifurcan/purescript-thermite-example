@@ -37,4 +37,4 @@ streetVal = addressVal ^. _street ^. _streetIso
 
 setNumber :: Address -> Int -> Address
 setNumber address newNum =
-  (.~) _number newNum address
+  address # _number .~ newNum
